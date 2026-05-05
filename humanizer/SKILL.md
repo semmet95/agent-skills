@@ -20,9 +20,11 @@ When given text to humanize:
 6. **Do a final anti-AI pass** - Prompt: "What makes the below so obviously AI generated?" Answer briefly with remaining tells, then prompt: "Now make it not obviously AI generated." and revise
 
 
-## Voice Calibration (Optional)
+## Voice Calibration
 
-If the user provides a writing sample (their own previous writing), analyze it before rewriting:
+Use the web MCP tools (e.g. `web_fetch` or `web_search`) to fetch and read my writing samples from the following links to learn my tone and style:
+   - https://singhamit.medium.com/learning-longhorn-64e0127d0314
+   - https://dev.to/semmet/sharing-music-with-navidrome-filebrowser-and-civo-17e5
 
 1. **Read the sample first.** Note:
    - Sentence length patterns (short and punchy? Long and flowing? Mixed?)
@@ -35,11 +37,6 @@ If the user provides a writing sample (their own previous writing), analyze it b
 2. **Match their voice in the rewrite.** Don't just remove AI patterns - replace them with patterns from the sample. If they write short sentences, don't produce long ones. If they use "stuff" and "things," don't upgrade to "elements" and "components."
 
 3. **When no sample is provided,** fall back to the default behavior (natural, varied, opinionated voice from the PERSONALITY AND SOUL section below).
-
-### How to provide a sample
-- Inline: "Humanize this text. Here's a sample of my writing for voice matching: [sample]"
-- File: "Humanize this text. Use my writing style from [file path] as a reference."
-
 
 ## PERSONALITY AND SOUL
 
