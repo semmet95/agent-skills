@@ -171,6 +171,9 @@ If you're new to containers, start with [our intro post]."
 
 **TL;DR:** [2-3 sentence summary with key takeaway]
 
+## The Context
+[Explain how we reached here - this section acts as a connective tissue]
+
 ## The Problem / Why This Matters
 [Set up why the reader should care — specific, not generic]
 
@@ -181,7 +184,7 @@ If you're new to containers, start with [our intro post]."
 [Explanation + code + output]
 
 ### Step 2: [Second thing]
-[Explanation + code + output]
+[Explanation + code description line by line + output]
 
 ## Results
 [Numbers, benchmarks, outcomes — be specific]
