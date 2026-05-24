@@ -1,7 +1,7 @@
 ---
 name: claim-verification
 description: >
-  Given a link to a media post containing a falsifiable claim, extract the core claim, use time-aware web search to find up to two high-quality external documents that directly support or refute it, and output only the URLs of those documents.
+  Given a link to a media post containing a falsifiable claim, extract the core claim, use time-aware web search to find up to two high-quality independent external documents that directly support or refute it, and output only the URLs of those documents.
 tags: [news, fact-checking, falsifiability, web-search, evidence-retrieval]
 ---
 
@@ -12,6 +12,8 @@ tags: [news, fact-checking, falsifiability, web-search, evidence-retrieval]
 Take a **falsifiable claim** made by a news or media outlet as input (via its URL), then use web search to find up to **two external documents** that **directly and conclusively** support or refute the claim.
 
 > This skill focuses on retrieving **real, verifiable URLs**, not generating narrative fact-checks.
+
+> Critical constraint: supporting or refuting proof must **never** come from the same source that made the claim. Use the claim source only to read and extract the claim itself.
 
 ---
 
@@ -53,8 +55,21 @@ No text, explanation, or code fences - only the JSON array.
 
 - **Falsifiable claim**: Concrete assertion that can be proven true or false by evidence (e.g., "X happened on date Y", "Organization Z reported N cases")
 - **Conclusive document**: Source that explicitly confirms or contradicts the claim's core factual content
+- **Claim source**: The outlet, publication, author organization, domain, or account that originally made the claim
 
 > All evidence must come from retrieved documents, not internal knowledge.
+
+---
+
+## Source independence rule
+
+The source that made the claim must not be used as supporting or refuting evidence.
+
+1. Use `claim_url` only to read the article/post and extract the claim.
+2. Do **not** query the claim source about the claim after extraction.
+3. Do **not** search within the claim source's domain, site, account, publication, or related syndicated pages for proof.
+4. Do **not** select any final evidence URL from the same source that made the claim, even if it appears to support, correct, retract, or refute the claim.
+5. If all available evidence comes from the claim source or circularly cites only the claim source, output `[]`.
 
 ---
 
@@ -83,7 +98,7 @@ When evaluating candidate documents, you must consider **time** alongside conten
 
 4. **Exceptions**:
    - A document that clearly states **multi-year data including the claim year** (e.g., a 2026 report summarizing data from 2020–2025) is acceptable as evidence for a claim about 2025.
-   - A document that **formally corrects or retracts** an earlier claim can be used even if published later than the claim period.
+   - A document from an **independent source** that formally corrects or retracts an earlier claim can be used even if published later than the claim period.
 
 If you cannot find a temporally appropriate document that directly addresses the claim, prefer to return **`[]`** rather than relying on outdated or misaligned evidence.
 
@@ -104,26 +119,31 @@ If you cannot find a temporally appropriate document that directly addresses the
 6. Break claim into: entities, actions/events, timeframes, quantities.
 7. **Include the claim's date/timeframe** in search queries to ensure temporal relevance. Use date filters or year-specific terms.
 8. Construct **2–4 queries** combining core entities and dates with keywords: `"official statement"`, `"press release"`, `"report"`, `"fact check"`.
+9. Exclude the claim source from evidence searches. If search syntax allows it, add a negative site/domain filter for the claim source.
 
 **Example patterns:**
 - `"[exact statistic]" site:gov [year]`
 - `"[official name]" press release [specific date]`
 - `"[subject]" [year] fact check OR investigation`
+- `"[subject]" [year] report -site:claim-source.example`
 
 ### 3. Gather candidate sources
 
-9. Use web search to retrieve candidate pages.
-10. For each promising result, verify:
+10. Use web search to retrieve candidate pages.
+11. For each promising result, verify:
     - It directly addresses the claim (same core event/data/decision)
     - **Publication date matches the claim's timeframe** (e.g., for a 2025 claim, documents from 2024 or earlier are likely irrelevant unless providing historical context)
-11. Discard pages that:
+    - It is not from the claim source or a page that merely republishes/syndicates the claim source
+12. Discard pages that:
     - Loosely mention the topic without addressing the specific claim
     - Are from wrong time periods (e.g., old reports about similar but different events)
+    - Are from the same source that made the claim
+    - Depend only on the claim source for the relevant factual assertion
     - Are forums, low-quality blogs, or user-generated content
 
 ### 4. Select up to two conclusive documents
 
-10. Identify sources that most directly speak to the claim.
+13. Identify sources that most directly speak to the claim.
 
 **Source preference:**
 1. Official/public institutional sources (government, courts, regulators, statistical agencies, official company press centers)
@@ -133,22 +153,24 @@ If you cannot find a temporally appropriate document that directly addresses the
 **Select sources that:**
 - Clearly confirm or contradict the claim
 - Are independent of each other
+- Are independent of the original claim source
 - Are more authoritative than the original media post
 - Directly address the claim (not passing mentions)
 - **Are temporally relevant** (published around the same time as the claim's event, not years apart)
 
 **Avoid:**
 - Duplicate reports, circular citations, opinion pieces
+- The original claim source, same-domain articles, same-account posts, syndicated copies, or later corrections/retractions from the same source
 - **Documents from different time periods** (e.g., 2024 fire reports as proof for 2025 fire claims)
 
 If no source directly addresses the claim, output `[]`.
 
 ### 5. Produce final output
 
-11. Never fabricate URLs. Every URL must correspond to a page actually retrieved.
-12. If unsure about relevance or authenticity, omit the URL.
-13. Output JSON array with 0-2 objects.
-14. Do not enclose the json string in code fences.
+14. Never fabricate URLs. Every URL must correspond to a page actually retrieved.
+15. If unsure about relevance, authenticity, or independence from the claim source, omit the URL.
+16. Output JSON array with 0-2 objects.
+17. Do not enclose the json string in code fences.
 
 **Examples:**
 
