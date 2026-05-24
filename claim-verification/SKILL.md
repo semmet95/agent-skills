@@ -36,6 +36,8 @@ Output **only a JSON array** (0-2 objects), where each object has:
 - `uri`: string - the document URL
 - `supports_claim`: boolean - `true` if supports, `false` if refutes
 
+Before any URL is included in the output, use the web search/browsing tool to visit that exact URL and verify that the page is reachable. Do not return URLs that fail to load, redirect to an unrelated page, require inaccessible authentication, or otherwise cannot be validated at output time.
+
 [
   {
     "uri": "https://example.org/document-1",
@@ -168,9 +170,11 @@ If no source directly addresses the claim, output `[]`.
 ### 5. Produce final output
 
 14. Never fabricate URLs. Every URL must correspond to a page actually retrieved.
-15. If unsure about relevance, authenticity, or independence from the claim source, omit the URL.
-16. Output JSON array with 0-2 objects.
-17. Do not enclose the json string in code fences.
+15. Immediately before returning any selected URL, use the web search/browsing tool to visit the exact URL and confirm it is valid, reachable, and still points to the selected evidence document.
+16. If the URL is invalid, unreachable, gated in a way that prevents verification, or redirects to unrelated content, omit it from the output.
+17. If unsure about relevance, authenticity, independence from the claim source, or URL validity, omit the URL.
+18. Output JSON array with 0-2 objects.
+19. Do not enclose the json string in code fences.
 
 **Examples:**
 
